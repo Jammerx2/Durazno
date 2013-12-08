@@ -68,6 +68,8 @@ public:
 	u8 triggerMin, triggerMax;
 	
 	_Remap remap[24];
+	u8 turbo[24];
+	u8 turboToggle;
 	
 private:
 	_Settings(const _Settings &);

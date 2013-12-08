@@ -136,6 +136,9 @@ void __fastcall DummyGetState(XINPUT_STATE* pState)
 	pState->Gamepad.sThumbRY =0;
 }
 
+bool turbo = false;
+bool turboPressed = false;
+bool turboState = false;
 void __fastcall TransformGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
 	TransformAnalog(pState->Gamepad.sThumbLX, pState->Gamepad.sThumbLY, settings[dwUserIndex], true);
@@ -145,6 +148,39 @@ void __fastcall TransformGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
 	TriggerRange(pState->Gamepad.bRightTrigger, settings[dwUserIndex]);
 
 	TransformRemap(dwUserIndex, pState);
+
+	//Just adding 2 to avoid extra code
+	if (pState->Gamepad.wButtons & (1 << (settings[dwUserIndex].turboToggle >= 10 ? settings[dwUserIndex].turboToggle + 2 : settings[dwUserIndex].turboToggle)))
+	{
+		if (turboPressed) return; //Don't keep toggling
+		turbo = !turbo;
+
+		if (turbo)
+		{
+			XINPUT_VIBRATION pVibration;
+			pVibration.wLeftMotorSpeed = pVibration.wRightMotorSpeed = 20000;
+			XInputSetState(dwUserIndex, &pVibration);
+		}
+		turboPressed = true;
+	}
+	else
+	{
+		XINPUT_VIBRATION pVibration;
+		pVibration.wLeftMotorSpeed = pVibration.wRightMotorSpeed = 0;
+		XInputSetState(dwUserIndex, &pVibration);
+		turboPressed = false;
+	}
+
+	if (turbo)
+	{
+		for (int i = 0; i < 24; i++)
+		{
+			if (settings[dwUserIndex].turbo[i] >= Gamepad::DISABLED) continue;
+			//Just adding 2 to avoid extra code
+			if (turboState) pState->Gamepad.wButtons = pState->Gamepad.wButtons & ~(1 << (settings[dwUserIndex].turbo[i] >= 10 ? settings[dwUserIndex].turbo[i] + 2 : settings[dwUserIndex].turbo[i]));
+		}
+		turboState = !turboState;
+	}
 }
 
 void __fastcall TransformSetState(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)

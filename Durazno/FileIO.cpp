@@ -105,6 +105,22 @@ void ReadRemap(u8 port, wchar_t * filename)
 	}
 }
 
+void ReadTurbo(u8 port, wchar_t * filename)
+{
+	wchar_t controller[512] = { 0 };
+	swprintf(controller, 512, L"Controller%d", port);
+
+	wchar_t returnvalue[512] = { 0 };
+	s32 nSize = GetPrivateProfileString(controller, L"Turbo", L"-1", returnvalue, 512, filename);
+	std::wstring value(returnvalue);
+
+	for (int i = 0; i < (nSize + 1) / 3; i++)
+	{
+		std::wstring val = value.substr(i * 3, 2);
+		settings[port].turbo[i] = _wtoi(val.c_str());
+	}
+}
+
 s32 ReadEntry(wchar_t * section, s32 sectionNumber, wchar_t * key, wchar_t * filename)
 {	
 	wchar_t controller[512] = {0};
@@ -213,6 +229,10 @@ void INI_LoadSettings()
 		result = ReadEntry(L"Controller", port, L"Port", filename);
 		if(result != -1) settings[port].port = result % 4;
 
+		result = ReadEntry(L"Controller", port, L"TurboToggle", filename);
+		if (result != -1) settings[port].turboToggle = result;
+
 		ReadRemap(port, filename);
+		ReadTurbo(port, filename);
 	}
 }

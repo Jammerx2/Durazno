@@ -42,5 +42,8 @@ _Settings::_Settings()
 		if(i < 14) remap[i].type = RT_DIGITAL_DIGITAL;
 		else if(i < 16) remap[i].type = RT_TRIGGER_TRIGGER;
 		else remap[i].type = RT_ANALOG_ANALOG;
+
+		turbo[i] = 24;
 	}
+	turboToggle = 24;
 }
